@@ -1,71 +1,46 @@
-import 'package:flutter/material.dart';
 
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_web_plugins/url_strategy.dart';
-import 'flutter_flow/flutter_flow_theme.dart';
-import 'flutter_flow/flutter_flow_util.dart';
-import 'flutter_flow/nav/nav.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:nb_utils/nb_utils.dart';
+import 'package:qi_bus_prokit/screen/QIBusSplash.dart';
+import 'package:qi_bus_prokit/store/AppStore.dart';
+import 'package:qi_bus_prokit/utils/AppTheme.dart';
+import 'package:qi_bus_prokit/utils/QiBusConstant.dart';
+import 'package:qi_bus_prokit/utils/QiBusDataGenerator.dart';
+
+
+AppStore appStore = AppStore();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  GoRouter.optionURLReflectsImperativeAPIs = true;
-  usePathUrlStrategy();
 
-  await FlutterFlowTheme.initialize();
+  await initialize(aLocaleLanguageList: languageList());
+
+  appStore.toggleDarkMode(value: getBoolAsync(isDarkModeOnPref));
+
+  defaultRadius = 10;
+  defaultToastGravityGlobal = ToastGravity.BOTTOM;
 
   runApp(const MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override
-  State<MyApp> createState() => _MyAppState();
-
-  static _MyAppState of(BuildContext context) =>
-      context.findAncestorStateOfType<_MyAppState>()!;
-}
-
-class _MyAppState extends State<MyApp> {
-  ThemeMode _themeMode = FlutterFlowTheme.themeMode;
-
-  late AppStateNotifier _appStateNotifier;
-  late GoRouter _router;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _appStateNotifier = AppStateNotifier.instance;
-    _router = createRouter(_appStateNotifier);
-  }
-
-  void setThemeMode(ThemeMode mode) => setState(() {
-        _themeMode = mode;
-        FlutterFlowTheme.saveThemeMode(mode);
-      });
-
-  @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'codeImport',
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: const [Locale('en', '')],
-      theme: ThemeData(
-        brightness: Brightness.light,
-        useMaterial3: false,
+    return Observer(
+      builder: (_) => MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Voyagair ${!isMobile ? ' ${platformName()}' : ''}',
+        home: QIBusSplash(),
+        theme: !appStore.isDarkModeOn ? AppThemeData.lightTheme : AppThemeData.darkTheme,
+        navigatorKey: navigatorKey,
+        scrollBehavior: SBehavior(),
+        supportedLocales: LanguageDataModel.languageLocales(),
+        localeResolutionCallback: (locale, supportedLocales) => locale,
       ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        useMaterial3: false,
-      ),
-      themeMode: _themeMode,
-      routerConfig: _router,
     );
   }
 }
